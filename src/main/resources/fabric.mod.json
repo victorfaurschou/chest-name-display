@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "storage-container-labels",
+	"version": "${version}",
+	"name": "Storage Container Labels",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/storage-container-labels/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.victorfaurschou.StorageContainerLabels"
+		],
+		"client": [
+			"com.victorfaurschou.storagecontainerlabels.client.StorageContainerLabelsClient"
+		]
+	},
+	"mixins": [
+		"storage-container-labels.mixins.json",
+		{
+			"config": "storage-container-labels.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
