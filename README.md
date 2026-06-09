@@ -24,5 +24,5 @@ Use an anvil to rename a chest to whatever you want. Place the chest and its nam
 - [Fabric API](https://modrinth.com/mod/fabric-api) ≥ 0.151.0+26.1.2
 
 **Optional**
-- [ModMenu](https://modrinth.com/mod/modmenu) - for configuration (not strictly necessary if defaults work for you)
+- [Mod Menu](https://modrinth.com/mod/modmenu) - for configuration (not strictly necessary if defaults work for you)
     - [Cloth Config](https://modrinth.com/mod/cloth-config)
