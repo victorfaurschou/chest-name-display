@@ -3,13 +3,14 @@
 	"id": "storage-container-labels",
 	"version": "${version}",
 	"name": "Storage Container Labels",
-	"description": "Displays labels above named chests.",
+	"description": "Display labels above named chests.",
 	"authors": [
 		"Victor Faurschou"
 	],
 	"contact": {
-		"homepage": "https://victorfaurschou.com",
-		"sources": "https://github.com/victorfaurschou/storage-container-labels"
+		"homepage": "https://modrinth.com/project/storage-container-labels",
+		"sources": "https://github.com/victorfaurschou/storage-container-labels",
+		"issues": "https://github.com/victorfaurschou/storage-container-labels/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/storage-container-labels/icon.png",
