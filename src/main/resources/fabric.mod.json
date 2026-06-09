@@ -3,9 +3,9 @@
 	"id": "storage-container-labels",
 	"version": "${version}",
 	"name": "Storage Container Labels",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Displays custom chest names as text above the chest.",
 	"authors": [
-		"Me!"
+		"Victor Faurschou"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -20,19 +20,19 @@
 		],
 		"client": [
 			"com.victorfaurschou.storagecontainerlabels.client.StorageContainerLabelsClient"
+		],
+		"modmenu": [
+			"com.victorfaurschou.storagecontainerlabels.client.ModMenuIntegration"
 		]
 	},
-	"mixins": [
-		"storage-container-labels.mixins.json",
-		{
-			"config": "storage-container-labels.client.mixins.json",
-			"environment": "client"
-		}
-	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
 		"minecraft": "~26.1.2",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*",
+		"cloth-config": "*"
 	}
 }
