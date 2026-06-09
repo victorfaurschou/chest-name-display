@@ -35,5 +35,7 @@ jobs:
         with:
           tag_name: v${{ steps.version_check.outputs.current }}
           name: v${{ steps.version_check.outputs.current }}
-          files: build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar
+          files: |
+            build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar
+            build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}-sources.jar
           generate_release_notes: true
