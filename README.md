@@ -1,3 +1,3 @@
 # Storage Container Labels
 
-Displays floating name labels above named chests.
+Displays labels above named chests.
