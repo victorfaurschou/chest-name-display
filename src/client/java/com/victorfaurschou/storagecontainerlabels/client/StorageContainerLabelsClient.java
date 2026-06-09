@@ -43,7 +43,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			if (++tickCount % 5 != 0) return;
 
 			BlockPos playerPos = client.player.blockPosition();
-			int range = StorageContainerLabelsConfig.minimumDistance;
+			int range = StorageContainerLabelsConfig.renderDistance;
 			Set<Long> seen = new HashSet<>();
 			List<ChestLabel> labels = new ArrayList<>();
 

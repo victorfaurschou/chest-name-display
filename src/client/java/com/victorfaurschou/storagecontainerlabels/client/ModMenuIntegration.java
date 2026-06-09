@@ -25,15 +25,15 @@ public class ModMenuIntegration implements ModMenuApi {
 
 		generalCategory
 			.addEntry(entryBuilder.startIntSlider(
-				Component.literal("Minimum Distance"),
-				StorageContainerLabelsConfig.minimumDistance,
+				Component.literal("Render Distance"),
+				StorageContainerLabelsConfig.renderDistance,
 				1,
 				32
 			)
 			.setDefaultValue(6)
-			.setTooltip(Component.literal("Minimum distance to display chest names"))
+			.setTooltip(Component.literal("Minimum render distance to display labels."))
 			.setSaveConsumer(value -> {
-				StorageContainerLabelsConfig.minimumDistance = value;
+				StorageContainerLabelsConfig.renderDistance = value;
 				StorageContainerLabelsConfig.save();
 			})
 			.build())
@@ -45,7 +45,7 @@ public class ModMenuIntegration implements ModMenuApi {
 			)
 			.setDefaultValue(6)
 			.setTextGetter(value -> Component.literal(String.format("%.1f", value / 10.0f)))
-			.setTooltip(Component.literal("Size of the displayed text"))
+			.setTooltip(Component.literal("Size of the label text."))
 			.setSaveConsumer(value -> {
 				StorageContainerLabelsConfig.size = value / 10.0f;
 				StorageContainerLabelsConfig.save();
@@ -59,7 +59,7 @@ public class ModMenuIntegration implements ModMenuApi {
 			)
 			.setDefaultValue(80)
 			.setTextGetter(value -> Component.literal(String.format("%d%%", value)))
-			.setTooltip(Component.literal("Opacity of the displayed text."))
+			.setTooltip(Component.literal("Opacity of the label text."))
 			.setSaveConsumer(value -> {
 				StorageContainerLabelsConfig.opacity = value / 100.0f;
 				StorageContainerLabelsConfig.save();

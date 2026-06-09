@@ -11,7 +11,7 @@ public class StorageContainerLabelsConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final File CONFIG_FILE = new File("config/storage-container-labels.json");
 
-	public static int minimumDistance = 6;
+	public static int renderDistance = 6;
 	public static float size = 0.6f;
 	public static float offsetX = 0.0f;
 	public static float offsetY = -0.8f;
@@ -22,7 +22,7 @@ public class StorageContainerLabelsConfig {
 		try {
 			CONFIG_FILE.getParentFile().mkdirs();
 			try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-				GSON.toJson(new ConfigData(minimumDistance, size, offsetX, offsetY, offsetZ, opacity), writer);
+				GSON.toJson(new ConfigData(renderDistance, size, offsetX, offsetY, offsetZ, opacity), writer);
 			}
 		} catch (IOException e) {
 			StorageContainerLabels.LOGGER.warn("Failed to save config", e);
@@ -35,7 +35,7 @@ public class StorageContainerLabelsConfig {
 				try (FileReader reader = new FileReader(CONFIG_FILE)) {
 					ConfigData data = GSON.fromJson(reader, ConfigData.class);
 					if (data != null) {
-						minimumDistance = data.minimumDistance;
+						renderDistance = data.minimumDistance;
 						size = data.size;
 						offsetX = data.offsetX;
 						offsetY = data.offsetY;
