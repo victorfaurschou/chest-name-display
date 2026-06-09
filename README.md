@@ -5,7 +5,7 @@ A mod that displays labels above named chests (and other storage blocks) in Mine
 ## Features
 
 - Display labels above storage blocks
-- Works for single and double chests (of all variants), barrels
+- Works for single and double chests (of all variants), barrels, Shulker boxes
 - Configurable render distance, size, opacity, color, offset, fading and visibility
 
 ## Usage

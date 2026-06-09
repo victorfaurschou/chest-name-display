@@ -16,8 +16,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import org.joml.Matrix4f;
 import java.util.ArrayList;
@@ -95,29 +97,13 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 
 				} else if (be instanceof BarrelBlockEntity barrel) {
 					if (!barrel.hasCustomName()) return;
-
 					Direction facing = client.level.getBlockState(pos).getValue(BarrelBlock.FACING);
-					double labelX, labelY, labelZ;
-					if (facing == Direction.UP) {
-						labelX = pos.getX() + 0.5;
-						labelY = pos.getY() + 1.5;
-						labelZ = pos.getZ() + 0.5;
-					} else if (facing == Direction.DOWN) {
-						labelX = pos.getX() + 0.5;
-						labelY = pos.getY() - 0.25;
-						labelZ = pos.getZ() + 0.5;
-					} else {
-						double[] rotated = StorageContainerLabels.rotateOffset(
-							StorageContainerLabelsConfig.offsetX,
-							StorageContainerLabelsConfig.offsetY,
-							StorageContainerLabelsConfig.offsetZ,
-							facing
-						);
-						labelX = pos.getX() + 0.5 + rotated[0];
-						labelY = pos.getY() + 1.25 + rotated[1];
-						labelZ = pos.getZ() + 0.5 + rotated[2];
-					}
-					labels.add(new ChestLabel(labelX, labelY, labelZ, barrel.getDisplayName()));
+					labels.add(labelForFacingBlock(pos, facing, barrel.getDisplayName()));
+
+				} else if (be instanceof ShulkerBoxBlockEntity shulker) {
+					if (!shulker.hasCustomName()) return;
+					Direction facing = client.level.getBlockState(pos).getValue(ShulkerBoxBlock.FACING);
+					labels.add(labelForFacingBlock(pos, facing, shulker.getDisplayName()));
 				}
 			});
 
@@ -176,5 +162,29 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 
 			bufferSource.endBatch();
 		});
+	}
+
+	private static ChestLabel labelForFacingBlock(BlockPos pos, Direction facing, Component name) {
+		double labelX, labelY, labelZ;
+		if (facing == Direction.UP) {
+			labelX = pos.getX() + 0.5;
+			labelY = pos.getY() + 1.5;
+			labelZ = pos.getZ() + 0.5;
+		} else if (facing == Direction.DOWN) {
+			labelX = pos.getX() + 0.5;
+			labelY = pos.getY() - 0.25;
+			labelZ = pos.getZ() + 0.5;
+		} else {
+			double[] rotated = StorageContainerLabels.rotateOffset(
+				StorageContainerLabelsConfig.offsetX,
+				StorageContainerLabelsConfig.offsetY,
+				StorageContainerLabelsConfig.offsetZ,
+				facing
+			);
+			labelX = pos.getX() + 0.5 + rotated[0];
+			labelY = pos.getY() + 1.25 + rotated[1];
+			labelZ = pos.getZ() + 0.5 + rotated[2];
+		}
+		return new ChestLabel(labelX, labelY, labelZ, name);
 	}
 }
