@@ -3,21 +3,21 @@
 	"id": "storage-container-labels",
 	"version": "${version}",
 	"name": "Storage Container Labels",
-	"description": "Displays custom chest names as text above the chest.",
+	"description": "Displays labels above named chests.",
 	"authors": [
 		"Victor Faurschou"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://victorfaurschou.com",
+		"sources": "https://github.com/victorfaurschou/storage-container-labels"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/storage-container-labels/icon.png",
 	"environment": "*",
+	"mixins": [
+		"storage-container-labels.mixins.json"
+	],
 	"entrypoints": {
-		"main": [
-			"com.victorfaurschou.StorageContainerLabels"
-		],
 		"client": [
 			"com.victorfaurschou.storagecontainerlabels.client.StorageContainerLabelsClient"
 		],

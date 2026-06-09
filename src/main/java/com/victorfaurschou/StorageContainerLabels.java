@@ -1,24 +1,20 @@
 package com.victorfaurschou;
 
-import net.fabricmc.api.ModInitializer;
-
+import net.minecraft.core.Direction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StorageContainerLabels implements ModInitializer {
+public class StorageContainerLabels {
 	public static final String MOD_ID = "storage-container-labels";
-
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
-		LOGGER.info("Hello Fabric world!");
+	public static double[] rotateOffset(double offsetX, double offsetY, double offsetZ, Direction facing) {
+		return switch (facing) {
+			case NORTH -> new double[]{offsetX, offsetY, offsetZ};
+			case SOUTH -> new double[]{-offsetX, offsetY, -offsetZ};
+			case EAST -> new double[]{-offsetZ, offsetY, -offsetX};
+			case WEST -> new double[]{offsetZ, offsetY, offsetX};
+			case UP, DOWN -> new double[]{offsetX, offsetY, offsetZ};
+		};
 	}
 }

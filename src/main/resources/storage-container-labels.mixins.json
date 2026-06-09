@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "com.victorfaurschou.storagecontainerlabels.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"BlockEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
