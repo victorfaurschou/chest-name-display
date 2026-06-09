@@ -125,7 +125,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 					false,
 					new Matrix4f(poseStack.last().pose()),
 					bufferSource,
-					Font.DisplayMode.SEE_THROUGH,
+					StorageContainerLabelsConfig.seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
 					0,
 					LightCoordsUtil.FULL_BRIGHT
 				);

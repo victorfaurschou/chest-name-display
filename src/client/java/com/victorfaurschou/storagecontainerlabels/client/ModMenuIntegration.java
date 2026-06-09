@@ -106,6 +106,17 @@ public class ModMenuIntegration implements ModMenuApi {
 				StorageContainerLabelsConfig.offsetZ = value / 10.0f;
 				StorageContainerLabelsConfig.save();
 			})
+			.build())
+			.addEntry(entryBuilder.startBooleanToggle(
+				Component.literal("Visible Through Blocks"),
+				StorageContainerLabelsConfig.seeThrough
+			)
+			.setDefaultValue(true)
+			.setTooltip(Component.literal("When enabled, labels are visible through blocks."))
+			.setSaveConsumer(value -> {
+				StorageContainerLabelsConfig.seeThrough = value;
+				StorageContainerLabelsConfig.save();
+			})
 			.build());
 
 		return builder.build();
