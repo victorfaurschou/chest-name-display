@@ -1,0 +1,39 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: check if version changed
+        id: version_check
+        run: |
+          CURRENT=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')
+          PREVIOUS=$(git show HEAD~1:gradle.properties 2>/dev/null | grep '^mod_version' | cut -d'=' -f2 | tr -d ' ' || echo "")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          if [ "$CURRENT" != "$PREVIOUS" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: create github release
+        if: steps.version_check.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version_check.outputs.current }}
+          name: v${{ steps.version_check.outputs.current }}
+          files: build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar
+          generate_release_notes: true
