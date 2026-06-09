@@ -104,13 +104,23 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			MultiBufferSource.BufferSource bufferSource = context.bufferSource();
 
 			int alpha = (int)(StorageContainerLabelsConfig.opacity * 255);
-			int argb = (alpha << 24) | 0xFFFFFF;
 			float scale = StorageContainerLabelsConfig.size * 0.025f;
+			float fadeRange = StorageContainerLabelsConfig.renderDistance * StorageContainerLabelsConfig.fade;
 
 			for (ChestLabel label : labels) {
 				double dx = label.worldX() - camera.pos.x;
 				double dy = label.worldY() - camera.pos.y;
 				double dz = label.worldZ() - camera.pos.z;
+
+				int argb;
+				if (fadeRange > 0f) {
+					float fadeStart = StorageContainerLabelsConfig.renderDistance - fadeRange;
+					float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+					float fadeMult = dist <= fadeStart ? 1.0f : 1.0f - (dist - fadeStart) / fadeRange;
+					argb = ((int)(alpha * Math.max(0f, fadeMult)) << 24) | 0xFFFFFF;
+				} else {
+					argb = (alpha << 24) | 0xFFFFFF;
+				}
 
 				poseStack.pushPose();
 				poseStack.translate(dx, dy, dz);

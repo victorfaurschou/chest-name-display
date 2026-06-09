@@ -18,12 +18,13 @@ public class StorageContainerLabelsConfig {
 	public static float offsetZ = -0.7f;
 	public static float opacity = 0.8f;
 	public static boolean seeThrough = true;
+	public static float fade = 0.15f;
 
 	public static void save() {
 		try {
 			CONFIG_FILE.getParentFile().mkdirs();
 			try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-				GSON.toJson(new ConfigData(renderDistance, size, offsetX, offsetY, offsetZ, opacity, seeThrough), writer);
+				GSON.toJson(new ConfigData(renderDistance, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade), writer);
 			}
 		} catch (IOException e) {
 			StorageContainerLabels.LOGGER.warn("Failed to save config", e);
@@ -43,6 +44,7 @@ public class StorageContainerLabelsConfig {
 						offsetZ = data.offsetZ;
 						opacity = data.opacity > 0 ? data.opacity : 0.8f;
 						seeThrough = data.seeThrough != null ? data.seeThrough : true;
+						fade = data.fade != null ? data.fade : 0.15f;
 					}
 				}
 			}
@@ -59,8 +61,9 @@ public class StorageContainerLabelsConfig {
 		float offsetZ;
 		float opacity;
 		Boolean seeThrough;
+		Float fade;
 
-		ConfigData(int minimumDistance, float size, float offsetX, float offsetY, float offsetZ, float opacity, boolean seeThrough) {
+		ConfigData(int minimumDistance, float size, float offsetX, float offsetY, float offsetZ, float opacity, boolean seeThrough, float fade) {
 			this.minimumDistance = minimumDistance;
 			this.size = size;
 			this.offsetX = offsetX;
@@ -68,6 +71,7 @@ public class StorageContainerLabelsConfig {
 			this.offsetZ = offsetZ;
 			this.opacity = opacity;
 			this.seeThrough = seeThrough;
+			this.fade = fade;
 		}
 	}
 }

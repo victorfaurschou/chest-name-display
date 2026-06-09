@@ -107,6 +107,20 @@ public class ModMenuIntegration implements ModMenuApi {
 				StorageContainerLabelsConfig.save();
 			})
 			.build())
+			.addEntry(entryBuilder.startIntSlider(
+				Component.literal("Distance Fade"),
+				(int)(StorageContainerLabelsConfig.fade * 100),
+				0,
+				100
+			)
+			.setDefaultValue(15)
+			.setTextGetter(value -> Component.literal(String.format("%d%%", value)))
+			.setTooltip(Component.literal("How much of the render distance fades out. 0 = hard cutoff, 100 = fades from full distance."))
+			.setSaveConsumer(value -> {
+				StorageContainerLabelsConfig.fade = value / 100.0f;
+				StorageContainerLabelsConfig.save();
+			})
+			.build())
 			.addEntry(entryBuilder.startBooleanToggle(
 				Component.literal("Visible Through Blocks"),
 				StorageContainerLabelsConfig.seeThrough

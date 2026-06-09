@@ -6,7 +6,7 @@ A mod that displays labels above named chests in Minecraft.
 
 - Display labels above named chests
 - Works for both single and double chests
-- Configurable render distance, label size, opacity, color, position offset and visibility
+- Configurable render distance, size, opacity, color, offset, fading and visibility
 
 ## Usage
 
