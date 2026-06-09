@@ -1,11 +1,11 @@
 # Storage Container Labels
 
-A mod that displays labels above named chests in Minecraft.
+A mod that displays labels above named chests (and other storage blocks) in Minecraft.
 
 ## Features
 
-- Display labels above named chests
-- Works for both single and double chests
+- Display labels above storage blocks
+- Works for both single and double chests, barrels
 - Configurable render distance, size, opacity, color, offset, fading and visibility
 
 ## Usage

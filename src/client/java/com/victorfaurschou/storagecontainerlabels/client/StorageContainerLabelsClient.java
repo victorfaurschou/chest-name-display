@@ -14,7 +14,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import org.joml.Matrix4f;
@@ -51,43 +53,72 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 				playerPos.offset(-range, -range, -range),
 				playerPos.offset(range, range, range)
 			).forEach(pos -> {
-				if (!(client.level.getBlockEntity(pos) instanceof ChestBlockEntity chest) || !chest.hasCustomName()) return;
+				var be = client.level.getBlockEntity(pos);
+				if (be instanceof ChestBlockEntity chest) {
+					if (!chest.hasCustomName()) return;
 
-				var blockState = client.level.getBlockState(pos);
-				Direction facing = blockState.getValue(ChestBlock.FACING);
-				ChestType chestType = blockState.getValue(ChestBlock.TYPE);
+					var blockState = client.level.getBlockState(pos);
+					Direction facing = blockState.getValue(ChestBlock.FACING);
+					ChestType chestType = blockState.getValue(ChestBlock.TYPE);
 
-				long myKey = pos.asLong();
-				long canonKey = myKey;
-				double centerX = pos.getX() + 0.5;
-				double centerZ = pos.getZ() + 0.5;
+					long myKey = pos.asLong();
+					long canonKey = myKey;
+					double centerX = pos.getX() + 0.5;
+					double centerZ = pos.getZ() + 0.5;
 
-				if (chestType != ChestType.SINGLE) {
-					Direction companionDir = (chestType == ChestType.LEFT)
-						? facing.getClockWise()
-						: facing.getCounterClockWise();
-					BlockPos companionPos = pos.relative(companionDir);
-					if (client.level.getBlockEntity(companionPos) instanceof ChestBlockEntity) {
-						canonKey = Math.min(myKey, companionPos.asLong());
-						centerX = (pos.getX() + companionPos.getX()) / 2.0 + 0.5;
-						centerZ = (pos.getZ() + companionPos.getZ()) / 2.0 + 0.5;
+					if (chestType != ChestType.SINGLE) {
+						Direction companionDir = (chestType == ChestType.LEFT)
+							? facing.getClockWise()
+							: facing.getCounterClockWise();
+						BlockPos companionPos = pos.relative(companionDir);
+						if (client.level.getBlockEntity(companionPos) instanceof ChestBlockEntity) {
+							canonKey = Math.min(myKey, companionPos.asLong());
+							centerX = (pos.getX() + companionPos.getX()) / 2.0 + 0.5;
+							centerZ = (pos.getZ() + companionPos.getZ()) / 2.0 + 0.5;
+						}
 					}
+
+					if (!seen.add(canonKey)) return;
+
+					double[] rotated = StorageContainerLabels.rotateOffset(
+						StorageContainerLabelsConfig.offsetX,
+						StorageContainerLabelsConfig.offsetY,
+						StorageContainerLabelsConfig.offsetZ,
+						facing
+					);
+					labels.add(new ChestLabel(
+						centerX + rotated[0],
+						pos.getY() + 1.25 + rotated[1],
+						centerZ + rotated[2],
+						chest.getDisplayName()
+					));
+
+				} else if (be instanceof BarrelBlockEntity barrel) {
+					if (!barrel.hasCustomName()) return;
+
+					Direction facing = client.level.getBlockState(pos).getValue(BarrelBlock.FACING);
+					double labelX, labelY, labelZ;
+					if (facing == Direction.UP) {
+						labelX = pos.getX() + 0.5;
+						labelY = pos.getY() + 1.5;
+						labelZ = pos.getZ() + 0.5;
+					} else if (facing == Direction.DOWN) {
+						labelX = pos.getX() + 0.5;
+						labelY = pos.getY() - 0.25;
+						labelZ = pos.getZ() + 0.5;
+					} else {
+						double[] rotated = StorageContainerLabels.rotateOffset(
+							StorageContainerLabelsConfig.offsetX,
+							StorageContainerLabelsConfig.offsetY,
+							StorageContainerLabelsConfig.offsetZ,
+							facing
+						);
+						labelX = pos.getX() + 0.5 + rotated[0];
+						labelY = pos.getY() + 1.25 + rotated[1];
+						labelZ = pos.getZ() + 0.5 + rotated[2];
+					}
+					labels.add(new ChestLabel(labelX, labelY, labelZ, barrel.getDisplayName()));
 				}
-
-				if (!seen.add(canonKey)) return;
-
-				double[] rotated = StorageContainerLabels.rotateOffset(
-					StorageContainerLabelsConfig.offsetX,
-					StorageContainerLabelsConfig.offsetY,
-					StorageContainerLabelsConfig.offsetZ,
-					facing
-				);
-				labels.add(new ChestLabel(
-					centerX + rotated[0],
-					pos.getY() + 1.25 + rotated[1],
-					centerZ + rotated[2],
-					chest.getDisplayName()
-				));
 			});
 
 			chestLabels = labels;
