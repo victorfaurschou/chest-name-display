@@ -51,3 +51,18 @@ jobs:
             build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar
             build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}-sources.jar
           generate_release_notes: true
+
+      - name: publish to modrinth
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          EXISTS=$(curl -s "https://api.modrinth.com/v2/project/JakHmE4K/version" \
+            -H "User-Agent: victorfaurschou/storage-container-labels" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(any(v['version_number']=='${{ steps.version_check.outputs.current }}' for v in vs))")
+          if [ "$EXISTS" = "True" ]; then
+            echo "Version ${{ steps.version_check.outputs.current }} already exists on Modrinth, skipping."
+            exit 0
+          fi
+          curl -s -X POST "https://api.modrinth.com/v2/version" \
+            -H "Authorization: ${{ secrets.MODRINTH_TOKEN }}" \
+            -H "User-Agent: victorfaurschou/storage-container-labels" \
+            -F 'data={"name":"${{ steps.version_check.outputs.current }}","version_number":"${{ steps.version_check.outputs.current }}","project_id":"JakHmE4K","file_parts":["jar"],"game_versions":["26.1.2"],"loaders":["fabric"],"version_type":"release","status":"listed","dependencies":[{"project_id":"P7dR8mSH","dependency_type":"required"},{"project_id":"mOgUt4GM","dependency_type":"optional"},{"project_id":"9s6osm5g","dependency_type":"optional"}],"featured":true}' \
+            -F "jar=@build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar"
