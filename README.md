@@ -1,21 +1,28 @@
 # Storage Container Labels
 
-A mod that displays labels above named chests (and other storage blocks) in Minecraft.
+A mod that displays labels above/around named storage containers in Minecraft.
 
 ## Features
 
-- Display labels above storage blocks
-- Works for single and double chests (of all variants), barrels, Shulker boxes
-- Configurable render distance, size, opacity, color, offset, fading and visibility
+- Works with:
+    - Single and double chests
+    - Chest variants
+    - Barrels
+    - Shulker boxes
+    - Hoppers
+    - Droppers
+    - Dispensers
+- Enable or disable per type
+- Configurable render distance, size, opacity, offset, fading and visibility
 
 ## Usage
 
-Use an anvil to rename a chest to whatever you want. Place the chest and its name will be displayed as a floating label attached to it. If Mod Menu is installed, you can customize how the labels are rendered.
+Use an anvil to rename a storage container to whatever you want. Place the container and its name will be displayed as a floating label attached to it. If Mod Menu is installed, you can customize the appearance of the labels.
 
 ### Examples
 
-![](.github/images/examples/example-1.png)
-![](.github/images/examples/example-2.png)
+![](.github/images/examples/1.png)
+![](.github/images/examples/2.png)
 
 ## Dependencies
 
