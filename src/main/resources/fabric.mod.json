@@ -3,7 +3,7 @@
 	"id": "storage-container-labels",
 	"version": "${version}",
 	"name": "Storage Container Labels",
-	"description": "Displays labels above/around named storage containers.",
+	"description": "Displays labels above/around named storage containers like chests, barrels, Shulker boxes and more.",
 	"authors": [
 		"medicalwhiskey"
 	],
