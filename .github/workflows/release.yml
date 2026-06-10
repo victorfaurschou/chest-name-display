@@ -1,9 +1,10 @@
 name: release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -11,23 +12,34 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-24.04
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 2
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: check if version changed
         id: version_check
         run: |
           CURRENT=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')
           PREVIOUS=$(git show HEAD~1:gradle.properties 2>/dev/null | grep '^mod_version' | cut -d'=' -f2 | tr -d ' ' || echo "")
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
           if [ "$CURRENT" != "$PREVIOUS" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: download build artifacts
+        if: steps.version_check.outputs.changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: Artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: build/libs
 
       - name: create github release
         if: steps.version_check.outputs.changed == 'true'
