@@ -3,9 +3,9 @@
 	"id": "storage-container-labels",
 	"version": "${version}",
 	"name": "Storage Container Labels",
-	"description": "Display labels above named chests.",
+	"description": "Displays labels above/around named storage containers.",
 	"authors": [
-		"Victor Faurschou"
+		"medicalwhiskey"
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/mod/storage-container-labels",
