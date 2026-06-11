@@ -2,6 +2,8 @@
 
 A mod that displays labels above/around named storage containers in Minecraft.
 
+Available on [Modrinth](https://modrinth.com/mod/storage-container-labels) and [CurseForge](https://www.curseforge.com/minecraft/mc-mods/storage-container-labels).
+
 ## Features
 
 - Works with:
@@ -13,8 +15,9 @@ A mod that displays labels above/around named storage containers in Minecraft.
     - Droppers
     - Dispensers
 - Enable or disable per type
-- Per container text color using `&X` color codes (e.g. `&cFood` for red, `&cFo&2od` for mixed colors)
 - Configurable render distance, color, size, opacity, offset, fading and visibility
+- Option to only show label for the container you're looking at
+- Per container text color using `&X` color codes (e.g. `&cFood` for red, `&cFo&2od` for mixed colors)
 
 ## Usage
 
@@ -33,3 +36,4 @@ Use an anvil to rename a storage container to whatever you want. Place the conta
 **Optional**
 - [Mod Menu](https://modrinth.com/mod/modmenu) - for configuration (not strictly necessary if defaults work for you)
     - [Cloth Config](https://modrinth.com/mod/cloth-config)
+
