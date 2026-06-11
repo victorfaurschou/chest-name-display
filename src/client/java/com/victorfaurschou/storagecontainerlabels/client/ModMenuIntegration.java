@@ -31,6 +31,16 @@ public class ModMenuIntegration implements ModMenuApi {
 			.setTooltip(Component.literal("Blocks radius to scan for labelled containers."))
 			.setSaveConsumer(v -> StorageContainerLabelsConfig.renderDistance = v)
 			.build())
+			.addEntry(entryBuilder.startIntSlider(
+				Component.literal("Wrap Width"),
+				StorageContainerLabelsConfig.wrapWidth,
+				20, 200
+			)
+			.setDefaultValue(110)
+			.setTextGetter(v -> Component.literal(v + " px"))
+			.setTooltip(Component.literal("Maximum label width in pixels before wrapping to a new line."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.wrapWidth = v)
+			.build())
 			.addEntry(entryBuilder.startBooleanToggle(
 				Component.literal("Visible Through Blocks"),
 				StorageContainerLabelsConfig.seeThrough

@@ -13,6 +13,7 @@ public class StorageContainerLabelsConfig {
 	private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve(StorageContainerLabels.MOD_ID + ".json").toFile();
 
 	public static int renderDistance = 6;
+	public static int wrapWidth = 110;
 	public static float size = 0.6f;
 	public static float offsetX = 0.0f;
 	public static float offsetY = -0.8f;
@@ -34,7 +35,7 @@ public class StorageContainerLabelsConfig {
 			CONFIG_FILE.getParentFile().mkdirs();
 			try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
 				GSON.toJson(new ConfigData(
-					renderDistance, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade,
+					renderDistance, wrapWidth, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade,
 					showForChests, showForChestVariants, showForBarrels, showForShulkerBoxes,
 					showForHoppers, showForDroppers, showForDispensers, labelColor
 				), writer);
@@ -51,6 +52,7 @@ public class StorageContainerLabelsConfig {
 					ConfigData data = GSON.fromJson(reader, ConfigData.class);
 					if (data != null) {
 						renderDistance = data.renderDistance != null ? data.renderDistance : 6;
+						wrapWidth = data.wrapWidth != null ? data.wrapWidth : 110;
 						size = data.size != null ? data.size : 0.6f;
 						offsetX = data.offsetX != null ? data.offsetX : 0.0f;
 						offsetY = data.offsetY != null ? data.offsetY : -0.8f;
@@ -76,6 +78,7 @@ public class StorageContainerLabelsConfig {
 
 	static class ConfigData {
 		Integer renderDistance;
+		Integer wrapWidth;
 		Float size;
 		Float offsetX;
 		Float offsetY;
@@ -92,12 +95,13 @@ public class StorageContainerLabelsConfig {
 		Boolean showForDispensers;
 		Integer labelColor;
 
-		ConfigData(int renderDistance, float size, float offsetX, float offsetY, float offsetZ,
+		ConfigData(int renderDistance, int wrapWidth, float size, float offsetX, float offsetY, float offsetZ,
 				float opacity, boolean seeThrough, float fade,
 				boolean showForChests, boolean showForChestVariants, boolean showForBarrels,
 				boolean showForShulkerBoxes, boolean showForHoppers, boolean showForDroppers,
 				boolean showForDispensers, int labelColor) {
 			this.renderDistance = renderDistance;
+			this.wrapWidth = wrapWidth;
 			this.size = size;
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;

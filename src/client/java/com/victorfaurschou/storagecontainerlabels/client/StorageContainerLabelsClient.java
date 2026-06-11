@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -230,23 +231,21 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 					argb = (alpha << 24) | label.color();
 				}
 
+				List<FormattedCharSequence> lines = client.font.split(label.name(), StorageContainerLabelsConfig.wrapWidth);
+				int lineHeight = client.font.lineHeight;
+				float startY = -(lines.size() - 1) * lineHeight / 2.0f;
+				Font.DisplayMode displayMode = StorageContainerLabelsConfig.seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
+
 				poseStack.pushPose();
 				poseStack.translate(dx, dy, dz);
 				poseStack.mulPose(camera.orientation);
 				poseStack.scale(scale, -scale, scale);
 
-				float textX = -client.font.width(label.name()) / 2.0f;
-				client.font.drawInBatch(
-					label.name(),
-					textX, 0f,
-					argb,
-					false,
-					poseStack.last().pose(),
-					bufferSource,
-					StorageContainerLabelsConfig.seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
-					0,
-					LightCoordsUtil.FULL_BRIGHT
-				);
+				for (int li = 0; li < lines.size(); li++) {
+					FormattedCharSequence line = lines.get(li);
+					float lineX = -client.font.width(line) / 2.0f;
+					client.font.drawInBatch(line, lineX, startY + li * lineHeight, argb, false, poseStack.last().pose(), bufferSource, displayMode, 0, LightCoordsUtil.FULL_BRIGHT);
+				}
 
 				poseStack.popPose();
 			}
