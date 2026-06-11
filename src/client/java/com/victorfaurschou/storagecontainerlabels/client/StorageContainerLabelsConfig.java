@@ -27,6 +27,7 @@ public class StorageContainerLabelsConfig {
 	public static boolean showForHoppers = false;
 	public static boolean showForDroppers = false;
 	public static boolean showForDispensers = false;
+	public static int labelColor = 0xFFFFFF;
 
 	public static void save() {
 		try {
@@ -35,7 +36,7 @@ public class StorageContainerLabelsConfig {
 				GSON.toJson(new ConfigData(
 					renderDistance, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade,
 					showForChests, showForChestVariants, showForBarrels, showForShulkerBoxes,
-					showForHoppers, showForDroppers, showForDispensers
+					showForHoppers, showForDroppers, showForDispensers, labelColor
 				), writer);
 			}
 		} catch (IOException e) {
@@ -64,6 +65,7 @@ public class StorageContainerLabelsConfig {
 						showForHoppers = data.showForHoppers != null ? data.showForHoppers : false;
 						showForDroppers = data.showForDroppers != null ? data.showForDroppers : false;
 						showForDispensers = data.showForDispensers != null ? data.showForDispensers : false;
+						labelColor = data.labelColor != null ? data.labelColor : 0xFFFFFF;
 					}
 				}
 			}
@@ -88,12 +90,13 @@ public class StorageContainerLabelsConfig {
 		Boolean showForHoppers;
 		Boolean showForDroppers;
 		Boolean showForDispensers;
+		Integer labelColor;
 
 		ConfigData(int renderDistance, float size, float offsetX, float offsetY, float offsetZ,
 				float opacity, boolean seeThrough, float fade,
 				boolean showForChests, boolean showForChestVariants, boolean showForBarrels,
 				boolean showForShulkerBoxes, boolean showForHoppers, boolean showForDroppers,
-				boolean showForDispensers) {
+				boolean showForDispensers, int labelColor) {
 			this.renderDistance = renderDistance;
 			this.size = size;
 			this.offsetX = offsetX;
@@ -109,6 +112,7 @@ public class StorageContainerLabelsConfig {
 			this.showForHoppers = showForHoppers;
 			this.showForDroppers = showForDroppers;
 			this.showForDispensers = showForDispensers;
+			this.labelColor = labelColor;
 		}
 	}
 }

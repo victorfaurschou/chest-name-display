@@ -91,6 +91,14 @@ public class ModMenuIntegration implements ModMenuApi {
 			.build());
 
 		builder.getOrCreateCategory(Component.literal("Appearance"))
+			.addEntry(entryBuilder.startColorField(
+				Component.literal("Label Color"),
+				StorageContainerLabelsConfig.labelColor
+			)
+			.setDefaultValue(0xFFFFFF)
+			.setTooltip(Component.literal("Default label color. Can be overridden per container with &X prefix (e.g. &cRed Chest)."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.labelColor = v)
+			.build())
 			.addEntry(entryBuilder.startIntSlider(
 				Component.literal("Size"),
 				(int)(StorageContainerLabelsConfig.size * 10),

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,7 +34,56 @@ import java.util.Map;
 import java.util.Set;
 
 public class StorageContainerLabelsClient implements ClientModInitializer {
-	private record ChestLabel(double worldX, double worldY, double worldZ, Component name) {}
+	private record ChestLabel(double worldX, double worldY, double worldZ, Component name, int color) {}
+
+	private static ChestLabel buildLabel(double x, double y, double z, Component name) {
+		String raw = name.getString();
+		if (!raw.contains("&")) {
+			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor);
+		}
+
+		var styled = Component.empty();
+		int currentColor = StorageContainerLabelsConfig.labelColor;
+		boolean anyCodeFound = false;
+		boolean stripNext = false;
+		var buf = new StringBuilder();
+		int i = 0;
+
+		while (i < raw.length()) {
+			if (i + 1 < raw.length() && raw.charAt(i) == '&') {
+				ChatFormatting fmt = ChatFormatting.getByCode(raw.charAt(i + 1));
+				if (fmt != null && fmt.getColor() != null) {
+					String seg = buf.toString();
+					if (stripNext) seg = seg.stripLeading();
+					if (!seg.isEmpty()) {
+						final int c = currentColor;
+						styled.append(Component.literal(seg).withStyle(s -> s.withColor(c)));
+					}
+					buf = new StringBuilder();
+					stripNext = !anyCodeFound && seg.isEmpty();
+					currentColor = fmt.getColor();
+					anyCodeFound = true;
+					i += 2;
+					continue;
+				}
+			}
+			buf.append(raw.charAt(i));
+			i++;
+		}
+
+		if (!anyCodeFound) {
+			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor);
+		}
+
+		String remaining = buf.toString();
+		if (stripNext) remaining = remaining.stripLeading();
+		if (!remaining.isEmpty()) {
+			final int c = currentColor;
+			styled.append(Component.literal(remaining).withStyle(s -> s.withColor(c)));
+		}
+
+		return new ChestLabel(x, y, z, styled, 0xFFFFFF);
+	}
 
 	private static List<ChestLabel> chestLabels = List.of();
 	private static int tickCount = 0;
@@ -107,7 +157,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 								StorageContainerLabelsConfig.offsetZ,
 								facing
 							);
-							labels.add(new ChestLabel(
+							labels.add(buildLabel(
 								centerX + rotated[0],
 								pos.getY() + 1.25 + rotated[1],
 								centerZ + rotated[2],
@@ -175,9 +225,9 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 					float fadeStart = StorageContainerLabelsConfig.renderDistance - fadeRange;
 					float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
 					float fadeMult = dist <= fadeStart ? 1.0f : 1.0f - (dist - fadeStart) / fadeRange;
-					argb = ((int)(alpha * Math.max(0f, fadeMult)) << 24) | 0xFFFFFF;
+					argb = ((int)(alpha * Math.max(0f, fadeMult)) << 24) | label.color();
 				} else {
-					argb = (alpha << 24) | 0xFFFFFF;
+					argb = (alpha << 24) | label.color();
 				}
 
 				poseStack.pushPose();
@@ -226,6 +276,6 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			labelY = pos.getY() + 1.25 + rotated[1];
 			labelZ = pos.getZ() + 0.5 + rotated[2];
 		}
-		return new ChestLabel(labelX, labelY, labelZ, name);
+		return buildLabel(labelX, labelY, labelZ, name);
 	}
 }

@@ -13,7 +13,8 @@ A mod that displays labels above/around named storage containers in Minecraft.
     - Droppers
     - Dispensers
 - Enable or disable per type
-- Configurable render distance, size, opacity, offset, fading and visibility
+- Per container text color using `&X` color codes (e.g. `&cFood` for red, `&cFo&2od` for mixed colors)
+- Configurable render distance, color, size, opacity, offset, fading and visibility
 
 ## Usage
 
