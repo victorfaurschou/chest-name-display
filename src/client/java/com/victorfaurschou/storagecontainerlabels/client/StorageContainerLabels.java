@@ -1,4 +1,4 @@
-package com.victorfaurschou;
+package com.victorfaurschou.storagecontainerlabels.client;
 
 import net.minecraft.core.Direction;
 import org.slf4j.Logger;
@@ -14,7 +14,7 @@ public class StorageContainerLabels {
 			case SOUTH -> new double[]{-offsetX, offsetY, -offsetZ};
 			case EAST -> new double[]{-offsetZ, offsetY, -offsetX};
 			case WEST -> new double[]{offsetZ, offsetY, offsetX};
-			case UP, DOWN -> new double[]{offsetX, offsetY, offsetZ};
+			default -> throw new IllegalArgumentException("rotateOffset called with vertical direction: " + facing);
 		};
 	}
 }

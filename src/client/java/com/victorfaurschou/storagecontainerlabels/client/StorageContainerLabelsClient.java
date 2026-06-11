@@ -1,8 +1,6 @@
 package com.victorfaurschou.storagecontainerlabels.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.victorfaurschou.StorageContainerLabels;
-import com.victorfaurschou.StorageContainerLabelsConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -15,22 +13,29 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.BarrelBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.DropperBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class StorageContainerLabelsClient implements ClientModInitializer {
 	private record ChestLabel(double worldX, double worldY, double worldZ, Component name) {}
 
-	private static volatile List<ChestLabel> chestLabels = List.of();
+	private static List<ChestLabel> chestLabels = List.of();
 	private static int tickCount = 0;
 
 	@Override
@@ -51,61 +56,97 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			Set<Long> seen = new HashSet<>();
 			List<ChestLabel> labels = new ArrayList<>();
 
-			BlockPos.betweenClosedStream(
-				playerPos.offset(-range, -range, -range),
-				playerPos.offset(range, range, range)
-			).forEach(pos -> {
-				var be = client.level.getBlockEntity(pos);
-				if (be instanceof ChestBlockEntity chest) {
-					if (!chest.hasCustomName()) return;
+			int chunkMinX = (playerPos.getX() - range) >> 4;
+			int chunkMaxX = (playerPos.getX() + range) >> 4;
+			int chunkMinZ = (playerPos.getZ() - range) >> 4;
+			int chunkMaxZ = (playerPos.getZ() + range) >> 4;
 
-					var blockState = client.level.getBlockState(pos);
-					Direction facing = blockState.getValue(ChestBlock.FACING);
-					ChestType chestType = blockState.getValue(ChestBlock.TYPE);
+			for (int cx = chunkMinX; cx <= chunkMaxX; cx++) {
+				for (int cz = chunkMinZ; cz <= chunkMaxZ; cz++) {
+					var chunk = client.level.getChunkSource().getChunkNow(cx, cz);
+					if (chunk == null) continue;
+					for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
+						BlockPos pos = entry.getKey();
+						if (Math.abs(pos.getX() - playerPos.getX()) > range) continue;
+						if (Math.abs(pos.getY() - playerPos.getY()) > range) continue;
+						if (Math.abs(pos.getZ() - playerPos.getZ()) > range) continue;
+						var be = entry.getValue();
 
-					long myKey = pos.asLong();
-					long canonKey = myKey;
-					double centerX = pos.getX() + 0.5;
-					double centerZ = pos.getZ() + 0.5;
+						if (be instanceof ChestBlockEntity chest) {
+							if (!chest.hasCustomName()) continue;
+							var blockState = chunk.getBlockState(pos);
+							boolean isVariant = blockState.getBlock() != Blocks.CHEST;
+							if (isVariant && !StorageContainerLabelsConfig.showForChestVariants) continue;
+							if (!isVariant && !StorageContainerLabelsConfig.showForChests) continue;
 
-					if (chestType != ChestType.SINGLE) {
-						Direction companionDir = (chestType == ChestType.LEFT)
-							? facing.getClockWise()
-							: facing.getCounterClockWise();
-						BlockPos companionPos = pos.relative(companionDir);
-						if (client.level.getBlockEntity(companionPos) instanceof ChestBlockEntity) {
-							canonKey = Math.min(myKey, companionPos.asLong());
-							centerX = (pos.getX() + companionPos.getX()) / 2.0 + 0.5;
-							centerZ = (pos.getZ() + companionPos.getZ()) / 2.0 + 0.5;
+							Direction facing = blockState.getValue(ChestBlock.FACING);
+							ChestType chestType = blockState.getValue(ChestBlock.TYPE);
+
+							long myKey = pos.asLong();
+							long canonKey = myKey;
+							double centerX = pos.getX() + 0.5;
+							double centerZ = pos.getZ() + 0.5;
+
+							if (chestType != ChestType.SINGLE) {
+								Direction companionDir = (chestType == ChestType.LEFT)
+									? facing.getClockWise()
+									: facing.getCounterClockWise();
+								BlockPos companionPos = pos.relative(companionDir);
+								if (client.level.getBlockEntity(companionPos) instanceof ChestBlockEntity) {
+									canonKey = Math.min(myKey, companionPos.asLong());
+									centerX = (pos.getX() + companionPos.getX()) / 2.0 + 0.5;
+									centerZ = (pos.getZ() + companionPos.getZ()) / 2.0 + 0.5;
+								}
+							}
+
+							if (!seen.add(canonKey)) continue;
+
+							double[] rotated = StorageContainerLabels.rotateOffset(
+								StorageContainerLabelsConfig.offsetX,
+								StorageContainerLabelsConfig.offsetY,
+								StorageContainerLabelsConfig.offsetZ,
+								facing
+							);
+							labels.add(new ChestLabel(
+								centerX + rotated[0],
+								pos.getY() + 1.25 + rotated[1],
+								centerZ + rotated[2],
+								chest.getDisplayName()
+							));
+
+						} else if (be instanceof BarrelBlockEntity barrel) {
+							if (!StorageContainerLabelsConfig.showForBarrels) continue;
+							if (!barrel.hasCustomName()) continue;
+							Direction facing = chunk.getBlockState(pos).getValue(BarrelBlock.FACING);
+							labels.add(labelForFacingBlock(pos, facing, barrel.getDisplayName()));
+
+						} else if (be instanceof ShulkerBoxBlockEntity shulker) {
+							if (!StorageContainerLabelsConfig.showForShulkerBoxes) continue;
+							if (!shulker.hasCustomName()) continue;
+							Direction facing = chunk.getBlockState(pos).getValue(ShulkerBoxBlock.FACING);
+							labels.add(labelForFacingBlock(pos, facing, shulker.getDisplayName()));
+
+						} else if (be instanceof DropperBlockEntity dropper) {
+							if (!StorageContainerLabelsConfig.showForDroppers) continue;
+							if (!dropper.hasCustomName()) continue;
+							Direction facing = chunk.getBlockState(pos).getValue(DispenserBlock.FACING);
+							labels.add(labelForFacingBlock(pos, facing, dropper.getDisplayName()));
+
+						} else if (be instanceof DispenserBlockEntity dispenser) {
+							if (!StorageContainerLabelsConfig.showForDispensers) continue;
+							if (!dispenser.hasCustomName()) continue;
+							Direction facing = chunk.getBlockState(pos).getValue(DispenserBlock.FACING);
+							labels.add(labelForFacingBlock(pos, facing, dispenser.getDisplayName()));
+
+						} else if (be instanceof HopperBlockEntity hopper) {
+							if (!StorageContainerLabelsConfig.showForHoppers) continue;
+							if (!hopper.hasCustomName()) continue;
+							Direction facing = chunk.getBlockState(pos).getValue(HopperBlock.FACING);
+							labels.add(labelForFacingBlock(pos, facing, hopper.getDisplayName()));
 						}
 					}
-
-					if (!seen.add(canonKey)) return;
-
-					double[] rotated = StorageContainerLabels.rotateOffset(
-						StorageContainerLabelsConfig.offsetX,
-						StorageContainerLabelsConfig.offsetY,
-						StorageContainerLabelsConfig.offsetZ,
-						facing
-					);
-					labels.add(new ChestLabel(
-						centerX + rotated[0],
-						pos.getY() + 1.25 + rotated[1],
-						centerZ + rotated[2],
-						chest.getDisplayName()
-					));
-
-				} else if (be instanceof BarrelBlockEntity barrel) {
-					if (!barrel.hasCustomName()) return;
-					Direction facing = client.level.getBlockState(pos).getValue(BarrelBlock.FACING);
-					labels.add(labelForFacingBlock(pos, facing, barrel.getDisplayName()));
-
-				} else if (be instanceof ShulkerBoxBlockEntity shulker) {
-					if (!shulker.hasCustomName()) return;
-					Direction facing = client.level.getBlockState(pos).getValue(ShulkerBoxBlock.FACING);
-					labels.add(labelForFacingBlock(pos, facing, shulker.getDisplayName()));
 				}
-			});
+			}
 
 			chestLabels = labels;
 		});
@@ -150,7 +191,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 					textX, 0f,
 					argb,
 					false,
-					new Matrix4f(poseStack.last().pose()),
+					poseStack.last().pose(),
 					bufferSource,
 					StorageContainerLabelsConfig.seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
 					0,
