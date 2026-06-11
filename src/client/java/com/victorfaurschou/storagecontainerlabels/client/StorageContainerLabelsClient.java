@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.LightCoordsUtil;
@@ -35,12 +37,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class StorageContainerLabelsClient implements ClientModInitializer {
-	private record ChestLabel(double worldX, double worldY, double worldZ, Component name, int color) {}
+	private record ChestLabel(double worldX, double worldY, double worldZ, Component name, int color, long pos1, long pos2) {}
 
-	private static ChestLabel buildLabel(double x, double y, double z, Component name) {
+	private static ChestLabel buildLabel(double x, double y, double z, Component name, long pos1, long pos2) {
 		String raw = name.getString();
 		if (!raw.contains("&")) {
-			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor);
+			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor, pos1, pos2);
 		}
 
 		var styled = Component.empty();
@@ -73,7 +75,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 		}
 
 		if (!anyCodeFound) {
-			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor);
+			return new ChestLabel(x, y, z, name, StorageContainerLabelsConfig.labelColor, pos1, pos2);
 		}
 
 		String remaining = buf.toString();
@@ -83,7 +85,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			styled.append(Component.literal(remaining).withStyle(s -> s.withColor(c)));
 		}
 
-		return new ChestLabel(x, y, z, styled, 0xFFFFFF);
+		return new ChestLabel(x, y, z, styled, 0xFFFFFF, pos1, pos2);
 	}
 
 	private static List<ChestLabel> chestLabels = List.of();
@@ -135,6 +137,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 
 							long myKey = pos.asLong();
 							long canonKey = myKey;
+							long companionKey = -1L;
 							double centerX = pos.getX() + 0.5;
 							double centerZ = pos.getZ() + 0.5;
 
@@ -144,7 +147,8 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 									: facing.getCounterClockWise();
 								BlockPos companionPos = pos.relative(companionDir);
 								if (client.level.getBlockEntity(companionPos) instanceof ChestBlockEntity) {
-									canonKey = Math.min(myKey, companionPos.asLong());
+									companionKey = companionPos.asLong();
+									canonKey = Math.min(myKey, companionKey);
 									centerX = (pos.getX() + companionPos.getX()) / 2.0 + 0.5;
 									centerZ = (pos.getZ() + companionPos.getZ()) / 2.0 + 0.5;
 								}
@@ -162,7 +166,8 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 								centerX + rotated[0],
 								pos.getY() + 1.25 + rotated[1],
 								centerZ + rotated[2],
-								chest.getDisplayName()
+								chest.getDisplayName(),
+								myKey, companionKey
 							));
 
 						} else if (be instanceof BarrelBlockEntity barrel) {
@@ -216,7 +221,16 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			float scale = StorageContainerLabelsConfig.size * 0.025f;
 			float fadeRange = StorageContainerLabelsConfig.renderDistance * StorageContainerLabelsConfig.fade;
 
+			long focusedKey = -1L;
+			if (StorageContainerLabelsConfig.focusedOnly && client.hitResult != null
+					&& client.hitResult.getType() == HitResult.Type.BLOCK) {
+				focusedKey = ((BlockHitResult) client.hitResult).getBlockPos().asLong();
+			}
+
 			for (ChestLabel label : labels) {
+				if (StorageContainerLabelsConfig.focusedOnly
+						&& label.pos1() != focusedKey && label.pos2() != focusedKey) continue;
+
 				double dx = label.worldX() - camera.pos.x;
 				double dy = label.worldY() - camera.pos.y;
 				double dz = label.worldZ() - camera.pos.z;
@@ -275,6 +289,6 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			labelY = pos.getY() + 1.25 + rotated[1];
 			labelZ = pos.getZ() + 0.5 + rotated[2];
 		}
-		return buildLabel(labelX, labelY, labelZ, name);
+		return buildLabel(labelX, labelY, labelZ, name, pos.asLong(), -1L);
 	}
 }

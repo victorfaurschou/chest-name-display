@@ -42,6 +42,14 @@ public class ModMenuIntegration implements ModMenuApi {
 			.setSaveConsumer(v -> StorageContainerLabelsConfig.wrapWidth = v)
 			.build())
 			.addEntry(entryBuilder.startBooleanToggle(
+				Component.literal("Show Focused Only"),
+				StorageContainerLabelsConfig.focusedOnly
+			)
+			.setDefaultValue(false)
+			.setTooltip(Component.literal("Only show the label for the container you are looking at."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.focusedOnly = v)
+			.build())
+			.addEntry(entryBuilder.startBooleanToggle(
 				Component.literal("Visible Through Blocks"),
 				StorageContainerLabelsConfig.seeThrough
 			)

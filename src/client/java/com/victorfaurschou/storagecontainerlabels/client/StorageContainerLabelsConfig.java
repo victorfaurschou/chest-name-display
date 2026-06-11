@@ -20,6 +20,7 @@ public class StorageContainerLabelsConfig {
 	public static float offsetZ = -0.7f;
 	public static float opacity = 0.8f;
 	public static boolean seeThrough = false;
+	public static boolean focusedOnly = false;
 	public static float fade = 0.15f;
 	public static boolean showForChests = true;
 	public static boolean showForChestVariants = true;
@@ -37,7 +38,7 @@ public class StorageContainerLabelsConfig {
 				GSON.toJson(new ConfigData(
 					renderDistance, wrapWidth, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade,
 					showForChests, showForChestVariants, showForBarrels, showForShulkerBoxes,
-					showForHoppers, showForDroppers, showForDispensers, labelColor
+					showForHoppers, showForDroppers, showForDispensers, labelColor, focusedOnly
 				), writer);
 			}
 		} catch (IOException e) {
@@ -68,6 +69,7 @@ public class StorageContainerLabelsConfig {
 						showForDroppers = data.showForDroppers != null ? data.showForDroppers : false;
 						showForDispensers = data.showForDispensers != null ? data.showForDispensers : false;
 						labelColor = data.labelColor != null ? data.labelColor : 0xFFFFFF;
+						focusedOnly = data.focusedOnly != null ? data.focusedOnly : false;
 					}
 				}
 			}
@@ -94,12 +96,13 @@ public class StorageContainerLabelsConfig {
 		Boolean showForDroppers;
 		Boolean showForDispensers;
 		Integer labelColor;
+		Boolean focusedOnly;
 
 		ConfigData(int renderDistance, int wrapWidth, float size, float offsetX, float offsetY, float offsetZ,
 				float opacity, boolean seeThrough, float fade,
 				boolean showForChests, boolean showForChestVariants, boolean showForBarrels,
 				boolean showForShulkerBoxes, boolean showForHoppers, boolean showForDroppers,
-				boolean showForDispensers, int labelColor) {
+				boolean showForDispensers, int labelColor, boolean focusedOnly) {
 			this.renderDistance = renderDistance;
 			this.wrapWidth = wrapWidth;
 			this.size = size;
@@ -117,6 +120,7 @@ public class StorageContainerLabelsConfig {
 			this.showForDroppers = showForDroppers;
 			this.showForDispensers = showForDispensers;
 			this.labelColor = labelColor;
+			this.focusedOnly = focusedOnly;
 		}
 	}
 }
