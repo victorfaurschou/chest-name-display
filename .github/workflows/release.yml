@@ -5,6 +5,14 @@ on:
     workflows: [build]
     types: [completed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Build workflow run ID to pull artifacts from'
+        required: true
+      ref:
+        description: 'Commit SHA the build was for'
+        required: true
 
 permissions:
   contents: write
@@ -12,13 +20,13 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-24.04
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 2
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || inputs.ref }}
 
       - name: check if version changed
         id: version_check
@@ -32,12 +40,20 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: check if already released
+        id: release_check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ASSET_COUNT=$(gh api repos/${{ github.repository }}/releases/tags/v${{ steps.version_check.outputs.current }} --jq '.assets | length' 2>/dev/null || echo "0")
+          echo "already_released=$([ "$ASSET_COUNT" -gt "0" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       - name: download build artifacts
         if: steps.version_check.outputs.changed == 'true'
         uses: actions/download-artifact@v4
         with:
           name: Artifacts
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: build/libs
 
@@ -52,8 +68,24 @@ jobs:
             build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}-sources.jar
           generate_release_notes: true
 
+      - name: publish to curseforge
+        if: steps.version_check.outputs.changed == 'true' && (github.event_name == 'workflow_dispatch' || steps.release_check.outputs.already_released != 'true')
+        run: |
+          VERSIONS=$(curl -sf "https://minecraft.curseforge.com/api/game/versions" \
+            -H "X-Api-Token: ${{ secrets.CURSEFORGE_TOKEN }}" \
+            -H "User-Agent: victorfaurschou/storage-container-labels")
+          MC_ID=$(echo "$VERSIONS" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(next(v['id'] for v in vs if v['name'] == '26.1.2'))")
+          FABRIC_ID=$(echo "$VERSIONS" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(next(v['id'] for v in vs if v['slug'] == 'fabric'))")
+          RESPONSE=$(curl -s -X POST "https://minecraft.curseforge.com/api/projects/1571732/upload-file" \
+            -H "X-Api-Token: ${{ secrets.CURSEFORGE_TOKEN }}" \
+            -H "User-Agent: victorfaurschou/storage-container-labels" \
+            -F "metadata={\"changelog\":\"See GitHub release notes.\",\"changelogType\":\"text\",\"releaseType\":\"release\",\"gameVersions\":[$MC_ID,$FABRIC_ID]}" \
+            -F "file=@build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar")
+          echo "CurseForge response: $RESPONSE"
+          echo "$RESPONSE" | python3 -c "import json,sys; r=json.load(sys.stdin); sys.exit(0 if 'id' in r else 1)"
+
       - name: publish to modrinth
-        if: steps.version_check.outputs.changed == 'true'
+        if: always() && steps.version_check.outputs.changed == 'true'
         run: |
           EXISTS=$(curl -s "https://api.modrinth.com/v2/project/JakHmE4K/version" \
             -H "User-Agent: victorfaurschou/storage-container-labels" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(any(v['version_number']=='${{ steps.version_check.outputs.current }}' for v in vs))")
