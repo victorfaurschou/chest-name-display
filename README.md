@@ -23,7 +23,6 @@ Use an anvil to rename a storage container to whatever you want. Place the conta
 ### Examples
 
 ![](.github/images/examples/1.png)
-![](.github/images/examples/2.png)
 
 ## Dependencies
 
