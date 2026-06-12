@@ -1,100 +1,72 @@
 name: release
-
 on:
   workflow_run:
     workflows: [build]
     types: [completed]
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      run_id:
-        description: 'Build workflow run ID to pull artifacts from'
-        required: true
-      ref:
-        description: 'Commit SHA the build was for'
-        required: true
-
-permissions:
-  contents: write
 
 jobs:
   release:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request' && startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-24.04
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+      actions: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    outputs:
+      version: ${{ steps.versions.outputs.version }}
+      minecraft_version: ${{ steps.versions.outputs.minecraft_version }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 2
-          ref: ${{ github.event.workflow_run.head_sha || inputs.ref }}
+          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: check if version changed
-        id: version_check
-        run: |
-          CURRENT=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')
-          PREVIOUS=$(git show HEAD~1:gradle.properties 2>/dev/null | grep '^mod_version' | cut -d'=' -f2 | tr -d ' ' || echo "")
-          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
-          if [ "$CURRENT" != "$PREVIOUS" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: check if already released
-        id: release_check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ASSET_COUNT=$(gh api repos/${{ github.repository }}/releases/tags/v${{ steps.version_check.outputs.current }} --jq '.assets | length' 2>/dev/null || echo "0")
-          echo "already_released=$([ "$ASSET_COUNT" -gt "0" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
-      - name: download build artifacts
-        if: steps.version_check.outputs.changed == 'true'
-        uses: actions/download-artifact@v4
+      - name: download artifacts
+        uses: actions/download-artifact@v5
         with:
           name: Artifacts
-          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
+          run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: build/libs
 
+      - name: read versions
+        id: versions
+        run: |
+          echo "version=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "minecraft_version=$(grep '^minecraft_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
       - name: create github release
-        if: steps.version_check.outputs.changed == 'true'
+        if: github.event.workflow_run.event == 'push'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version_check.outputs.current }}
-          name: v${{ steps.version_check.outputs.current }}
+          tag_name: ${{ github.event.workflow_run.head_branch }}
+          name: ${{ github.event.workflow_run.head_branch }}
           files: |
-            build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar
-            build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}-sources.jar
+            build/libs/storage-container-labels-${{ steps.versions.outputs.version }}.jar
+            build/libs/storage-container-labels-${{ steps.versions.outputs.version }}-sources.jar
           generate_release_notes: true
 
-      - name: publish to curseforge
-        if: steps.version_check.outputs.changed == 'true' && (github.event_name == 'workflow_dispatch' || steps.release_check.outputs.already_released != 'true')
-        run: |
-          VERSIONS=$(curl -sf "https://minecraft.curseforge.com/api/game/versions" \
-            -H "X-Api-Token: ${{ secrets.CURSEFORGE_TOKEN }}" \
-            -H "User-Agent: victorfaurschou/storage-container-labels")
-          MC_ID=$(echo "$VERSIONS" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(next(v['id'] for v in vs if v['name'] == '26.1.2'))")
-          FABRIC_ID=$(echo "$VERSIONS" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(next(v['id'] for v in vs if v['slug'] == 'fabric'))")
-          RESPONSE=$(curl -s -X POST "https://minecraft.curseforge.com/api/projects/1571732/upload-file" \
-            -H "X-Api-Token: ${{ secrets.CURSEFORGE_TOKEN }}" \
-            -H "User-Agent: victorfaurschou/storage-container-labels" \
-            -F "metadata={\"changelog\":\"See GitHub release notes.\",\"changelogType\":\"text\",\"releaseType\":\"release\",\"gameVersions\":[$MC_ID,$FABRIC_ID]}" \
-            -F "file=@build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar")
-          echo "CurseForge response: $RESPONSE"
-          echo "$RESPONSE" | python3 -c "import json,sys; r=json.load(sys.stdin); sys.exit(0 if 'id' in r else 1)"
+  publish-modrinth:
+    needs: release
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/publish-modrinth.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+      minecraft_version: ${{ needs.release.outputs.minecraft_version }}
+      build_run_id: ${{ github.event.workflow_run.id }}
+    secrets: inherit
 
-      - name: publish to modrinth
-        if: always() && steps.version_check.outputs.changed == 'true'
-        run: |
-          EXISTS=$(curl -s "https://api.modrinth.com/v2/project/JakHmE4K/version" \
-            -H "User-Agent: victorfaurschou/storage-container-labels" | python3 -c "import json,sys; vs=json.load(sys.stdin); print(any(v['version_number']=='${{ steps.version_check.outputs.current }}' for v in vs))")
-          if [ "$EXISTS" = "True" ]; then
-            echo "Version ${{ steps.version_check.outputs.current }} already exists on Modrinth, skipping."
-            exit 0
-          fi
-          curl -s -X POST "https://api.modrinth.com/v2/version" \
-            -H "Authorization: ${{ secrets.MODRINTH_TOKEN }}" \
-            -H "User-Agent: victorfaurschou/storage-container-labels" \
-            -F 'data={"name":"${{ steps.version_check.outputs.current }}","version_number":"${{ steps.version_check.outputs.current }}","project_id":"JakHmE4K","file_parts":["jar"],"game_versions":["26.1.2"],"loaders":["fabric"],"version_type":"release","status":"listed","dependencies":[{"project_id":"P7dR8mSH","dependency_type":"required"},{"project_id":"mOgUt4GM","dependency_type":"optional"},{"project_id":"9s6osm5g","dependency_type":"optional"}],"featured":true}' \
-            -F "jar=@build/libs/storage-container-labels-${{ steps.version_check.outputs.current }}.jar"
+  publish-curseforge:
+    needs: release
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/publish-curseforge.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+      minecraft_version: ${{ needs.release.outputs.minecraft_version }}
+      build_run_id: ${{ github.event.workflow_run.id }}
+    secrets: inherit

@@ -2,41 +2,15 @@ name: build
 on:
   pull_request:
   push:
-    paths:
-      - 'gradle.properties'
-
-permissions:
-  actions: write
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  check:
-    runs-on: ubuntu-24.04
-    outputs:
-      should_build: ${{ steps.check.outputs.should_build }}
-    steps:
-      - name: checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 2
-      - name: check if version changed
-        id: check
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
-          else
-            CURRENT=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')
-            PREVIOUS=$(git show HEAD~1:gradle.properties 2>/dev/null | grep '^mod_version' | cut -d'=' -f2 | tr -d ' ' || echo "")
-            if [ "$CURRENT" != "$PREVIOUS" ]; then
-              echo "should_build=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "should_build=false" >> "$GITHUB_OUTPUT"
-            fi
-          fi
-
   build:
-    needs: check
-    if: needs.check.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
@@ -52,17 +26,7 @@ jobs:
       - name: build
         run: ./gradlew build
       - name: capture build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Artifacts
           path: build/libs/
-
-  cleanup:
-    needs: check
-    if: needs.check.outputs.should_build != 'true'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: delete skipped run
-        run: gh api --method DELETE repos/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
