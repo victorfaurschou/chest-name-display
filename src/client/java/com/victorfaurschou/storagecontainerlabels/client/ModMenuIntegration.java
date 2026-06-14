@@ -176,6 +176,32 @@ public class ModMenuIntegration implements ModMenuApi {
 			.setTextGetter(v -> Component.literal(String.format("%d%%", v)))
 			.setTooltip(Component.literal("Opacity of the label text."))
 			.setSaveConsumer(v -> StorageContainerLabelsConfig.opacity = v / 100.0f)
+			.build())
+			.addEntry(entryBuilder.startBooleanToggle(
+				Component.literal("Show Background"),
+				StorageContainerLabelsConfig.showBackground
+			)
+			.setDefaultValue(false)
+			.setTooltip(Component.literal("Show a background behind label text."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.showBackground = v)
+			.build())
+			.addEntry(entryBuilder.startColorField(
+				Component.literal("Background Color"),
+				StorageContainerLabelsConfig.backgroundColor
+			)
+			.setDefaultValue(0x000000)
+			.setTooltip(Component.literal("Color of the label background."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.backgroundColor = v)
+			.build())
+			.addEntry(entryBuilder.startIntSlider(
+				Component.literal("Background Opacity"),
+				(int)(StorageContainerLabelsConfig.backgroundOpacity * 100),
+				1, 100
+			)
+			.setDefaultValue(25)
+			.setTextGetter(v -> Component.literal(String.format("%d%%", v)))
+			.setTooltip(Component.literal("Opacity of the label background."))
+			.setSaveConsumer(v -> StorageContainerLabelsConfig.backgroundOpacity = v / 100.0f)
 			.build());
 
 		return builder.build();

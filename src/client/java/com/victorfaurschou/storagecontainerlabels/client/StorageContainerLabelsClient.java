@@ -218,6 +218,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			MultiBufferSource.BufferSource bufferSource = context.bufferSource();
 
 			int alpha = (int)(StorageContainerLabelsConfig.opacity * 255);
+			int bgAlpha = (int)(StorageContainerLabelsConfig.backgroundOpacity * 255);
 			float scale = StorageContainerLabelsConfig.size * 0.025f;
 			float fadeRange = StorageContainerLabelsConfig.renderDistance * StorageContainerLabelsConfig.fade;
 
@@ -236,13 +237,18 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 				double dz = label.worldZ() - camera.pos.z;
 
 				int argb;
+				int bgArgb = 0;
 				if (fadeRange > 0f) {
 					float fadeStart = StorageContainerLabelsConfig.renderDistance - fadeRange;
 					float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-					float fadeMult = dist <= fadeStart ? 1.0f : 1.0f - (dist - fadeStart) / fadeRange;
-					argb = ((int)(alpha * Math.max(0f, fadeMult)) << 24) | label.color();
+					float fadeMult = Math.max(0f, dist <= fadeStart ? 1.0f : 1.0f - (dist - fadeStart) / fadeRange);
+					argb = ((int)(alpha * fadeMult) << 24) | label.color();
+					if (StorageContainerLabelsConfig.showBackground)
+						bgArgb = ((int)(bgAlpha * fadeMult) << 24) | StorageContainerLabelsConfig.backgroundColor;
 				} else {
 					argb = (alpha << 24) | label.color();
+					if (StorageContainerLabelsConfig.showBackground)
+						bgArgb = (bgAlpha << 24) | StorageContainerLabelsConfig.backgroundColor;
 				}
 
 				List<FormattedCharSequence> lines = client.font.split(label.name(), StorageContainerLabelsConfig.wrapWidth);
@@ -258,7 +264,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 				for (int li = 0; li < lines.size(); li++) {
 					FormattedCharSequence line = lines.get(li);
 					float lineX = -client.font.width(line) / 2.0f;
-					client.font.drawInBatch(line, lineX, startY + li * lineHeight, argb, false, poseStack.last().pose(), bufferSource, displayMode, 0, LightCoordsUtil.FULL_BRIGHT);
+					client.font.drawInBatch(line, lineX, startY + li * lineHeight, argb, false, poseStack.last().pose(), bufferSource, displayMode, bgArgb, LightCoordsUtil.FULL_BRIGHT);
 				}
 
 				poseStack.popPose();

@@ -30,6 +30,9 @@ public class StorageContainerLabelsConfig {
 	public static boolean showForDroppers = false;
 	public static boolean showForDispensers = false;
 	public static int labelColor = 0xFFFFFF;
+	public static boolean showBackground = false;
+	public static int backgroundColor = 0x000000;
+	public static float backgroundOpacity = 0.25f;
 
 	public static void save() {
 		try {
@@ -38,7 +41,8 @@ public class StorageContainerLabelsConfig {
 				GSON.toJson(new ConfigData(
 					renderDistance, wrapWidth, size, offsetX, offsetY, offsetZ, opacity, seeThrough, fade,
 					showForChests, showForChestVariants, showForBarrels, showForShulkerBoxes,
-					showForHoppers, showForDroppers, showForDispensers, labelColor, focusedOnly
+					showForHoppers, showForDroppers, showForDispensers, labelColor, focusedOnly,
+					showBackground, backgroundColor, backgroundOpacity
 				), writer);
 			}
 		} catch (IOException e) {
@@ -70,6 +74,9 @@ public class StorageContainerLabelsConfig {
 						showForDispensers = data.showForDispensers != null ? data.showForDispensers : false;
 						labelColor = data.labelColor != null ? data.labelColor : 0xFFFFFF;
 						focusedOnly = data.focusedOnly != null ? data.focusedOnly : false;
+						showBackground = data.showBackground != null ? data.showBackground : false;
+						backgroundColor = data.backgroundColor != null ? data.backgroundColor : 0x000000;
+						backgroundOpacity = data.backgroundOpacity != null ? data.backgroundOpacity : 0.25f;
 					}
 				}
 			}
@@ -97,12 +104,16 @@ public class StorageContainerLabelsConfig {
 		Boolean showForDispensers;
 		Integer labelColor;
 		Boolean focusedOnly;
+		Boolean showBackground;
+		Integer backgroundColor;
+		Float backgroundOpacity;
 
 		ConfigData(int renderDistance, int wrapWidth, float size, float offsetX, float offsetY, float offsetZ,
 				float opacity, boolean seeThrough, float fade,
 				boolean showForChests, boolean showForChestVariants, boolean showForBarrels,
 				boolean showForShulkerBoxes, boolean showForHoppers, boolean showForDroppers,
-				boolean showForDispensers, int labelColor, boolean focusedOnly) {
+				boolean showForDispensers, int labelColor, boolean focusedOnly,
+				boolean showBackground, int backgroundColor, float backgroundOpacity) {
 			this.renderDistance = renderDistance;
 			this.wrapWidth = wrapWidth;
 			this.size = size;
@@ -121,6 +132,9 @@ public class StorageContainerLabelsConfig {
 			this.showForDispensers = showForDispensers;
 			this.labelColor = labelColor;
 			this.focusedOnly = focusedOnly;
+			this.showBackground = showBackground;
+			this.backgroundColor = backgroundColor;
+			this.backgroundOpacity = backgroundOpacity;
 		}
 	}
 }
