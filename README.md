@@ -1,10 +1,10 @@
 # Storage Container Labels
 
-Displays labels above/around named storage containers like chests, barrels, Shulker boxes and more.
+**Displays labels above/around named storage containers like chests, barrels, Shulker boxes and more.**
 
 Available on [Modrinth](https://modrinth.com/mod/storage-container-labels) and [CurseForge](https://www.curseforge.com/minecraft/mc-mods/storage-container-labels).
 
-## Features
+## 📋 Features
 
 - Works with:
     - Single and double chests
@@ -27,7 +27,7 @@ Use an anvil to rename a storage container to whatever you want. Place the conta
 
 [![1](https://raw.githubusercontent.com/victorfaurschou/storage-container-labels/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/1.png)](https://github.com/victorfaurschou/storage-container-labels/blob/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/1.png)
 
-## Dependencies
+## 🔗 Dependencies
 
 **Required**
 - [Fabric Loader](https://fabricmc.net/use/) ≥ 0.19.3
@@ -37,6 +37,6 @@ Use an anvil to rename a storage container to whatever you want. Place the conta
 - [Mod Menu](https://modrinth.com/mod/modmenu) - for configuration (not strictly necessary if defaults work for you)
     - [Cloth Config](https://modrinth.com/mod/cloth-config)
 
-## Tags
+## 🏷️ Tags
 
 `minecraft, mod, fabric, storage, chests, names, labels, quality of life (QoL)`
