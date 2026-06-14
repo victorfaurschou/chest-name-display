@@ -33,3 +33,21 @@ response=$(curl -s -X POST "https://api.modrinth.com/v2/version" \
 
 printf '%s\n' "$response"
 printf '%s' "$response" | python3 -c 'import json,sys; r=json.load(sys.stdin); sys.exit(0 if "id" in r else 1)'
+
+curl -sf -X PATCH "https://api.modrinth.com/v2/project/${PROJECT_ID}" \
+    -H "Authorization: ${MODRINTH_TOKEN}" \
+    -H "User-Agent: victorfaurschou/storage-container-labels" \
+    -H "Content-Type: application/json" \
+    -d "$(python3 -c "
+import json, re, sys
+lines = sys.stdin.read().splitlines()
+summary_lines = []
+for line in lines[2:]:
+    if line == '':
+        break
+    summary_lines.append(line)
+summary = re.sub(r'\*{1,2}|_{1,2}', '', ' '.join(summary_lines))
+with open('README.md') as f:
+    body = f.read()
+print(json.dumps({'description': summary, 'body': body}))
+" < README.md)"
