@@ -6,67 +6,20 @@ on:
 
 jobs:
   release:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request' && startsWith(github.event.workflow_run.head_branch, 'v')
-    runs-on: ubuntu-24.04
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event != 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
     permissions:
       contents: write
       actions: read
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    outputs:
-      version: ${{ steps.versions.outputs.version }}
-      minecraft_version: ${{ steps.versions.outputs.minecraft_version }}
-    steps:
-      - name: checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
-      - name: download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          name: Artifacts
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: build/libs
-
-      - name: read versions
-        id: versions
-        run: |
-          echo "version=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          echo "minecraft_version=$(grep '^minecraft_version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
-
-      - name: create github release
-        if: github.event.workflow_run.event == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.workflow_run.head_branch }}
-          name: ${{ github.event.workflow_run.head_branch }}
-          files: |
-            build/libs/storage-container-labels-${{ steps.versions.outputs.version }}.jar
-            build/libs/storage-container-labels-${{ steps.versions.outputs.version }}-sources.jar
-          generate_release_notes: true
-
-  publish-modrinth:
-    needs: release
-    permissions:
-      actions: read
-      contents: read
-    uses: ./.github/workflows/publish-modrinth.yml
+    uses: victorfaurschou/minecraft-mod-workflows/.github/workflows/release.yml@main
     with:
-      version: ${{ needs.release.outputs.version }}
-      minecraft_version: ${{ needs.release.outputs.minecraft_version }}
+      mod_name: storage-container-labels
       build_run_id: ${{ github.event.workflow_run.id }}
-    secrets: inherit
-
-  publish-curseforge:
-    needs: release
-    permissions:
-      actions: read
-      contents: read
-    uses: ./.github/workflows/publish-curseforge.yml
-    with:
-      version: ${{ needs.release.outputs.version }}
-      minecraft_version: ${{ needs.release.outputs.minecraft_version }}
-      build_run_id: ${{ github.event.workflow_run.id }}
+      build_sha: ${{ github.event.workflow_run.head_sha }}
+      build_branch: ${{ github.event.workflow_run.head_branch }}
+      build_event: ${{ github.event.workflow_run.event }}
+      modrinth_extra_deps: '[{"project_id":"mOgUt4GM","dependency_type":"optional"},{"project_id":"9s6osm5g","dependency_type":"optional"}]'
+      curseforge_fabric_dep: false
     secrets: inherit
