@@ -20,6 +20,4 @@ jobs:
       build_sha: ${{ github.event.workflow_run.head_sha }}
       build_branch: ${{ github.event.workflow_run.head_branch }}
       build_event: ${{ github.event.workflow_run.event }}
-      modrinth_extra_deps: '[{"project_id":"mOgUt4GM","dependency_type":"optional"},{"project_id":"9s6osm5g","dependency_type":"optional"}]'
-      curseforge_fabric_dep: false
     secrets: inherit
