@@ -20,4 +20,5 @@ jobs:
       build_sha: ${{ github.event.workflow_run.head_sha }}
       build_branch: ${{ github.event.workflow_run.head_branch }}
       build_event: ${{ github.event.workflow_run.event }}
+      modrinth_environment: client_or_server_prefers_both
     secrets: inherit
