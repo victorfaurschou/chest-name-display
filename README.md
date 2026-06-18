@@ -39,4 +39,4 @@ Use an anvil to rename a storage container to whatever you want. Place the conta
 
 ## 🏷️ Tags
 
-`minecraft, mod, fabric, storage, chests, names, labels, quality of life (QoL)`
+`minecraft, mod, fabric, storage, container, chests, names, labels, floating text, quality of life, qol`
