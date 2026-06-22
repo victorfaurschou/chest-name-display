@@ -7,8 +7,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.BlockHitResult;
@@ -55,7 +56,8 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 		while (i < raw.length()) {
 			if (i + 1 < raw.length() && raw.charAt(i) == '&') {
 				ChatFormatting fmt = ChatFormatting.getByCode(raw.charAt(i + 1));
-				if (fmt != null && fmt.getColor() != null) {
+				TextColor textColor = fmt != null ? TextColor.fromLegacyFormat(fmt) : null;
+				if (textColor != null) {
 					String seg = buf.toString();
 					if (stripNext) seg = seg.stripLeading();
 					if (!seg.isEmpty()) {
@@ -64,7 +66,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 					}
 					buf = new StringBuilder();
 					stripNext = !anyCodeFound && seg.isEmpty();
-					currentColor = fmt.getColor();
+					currentColor = textColor.getValue();
 					anyCodeFound = true;
 					i += 2;
 					continue;
@@ -207,7 +209,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			chestLabels = labels;
 		});
 
-		LevelRenderEvents.END_MAIN.register(context -> {
+		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
 			List<ChestLabel> labels = chestLabels;
 			if (labels.isEmpty()) return;
 
@@ -215,7 +217,7 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 			CameraRenderState camera = context.levelState().cameraRenderState;
 
 			PoseStack poseStack = context.poseStack();
-			MultiBufferSource.BufferSource bufferSource = context.bufferSource();
+			SubmitNodeCollector collector = context.submitNodeCollector();
 
 			int alpha = (int)(StorageContainerLabelsConfig.opacity * 255);
 			int bgAlpha = (int)(StorageContainerLabelsConfig.backgroundOpacity * 255);
@@ -264,13 +266,11 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 				for (int li = 0; li < lines.size(); li++) {
 					FormattedCharSequence line = lines.get(li);
 					float lineX = -client.font.width(line) / 2.0f;
-					client.font.drawInBatch(line, lineX, startY + li * lineHeight, argb, false, poseStack.last().pose(), bufferSource, displayMode, bgArgb, LightCoordsUtil.FULL_BRIGHT);
+					collector.submitText(poseStack, lineX, startY + li * lineHeight, line, false, displayMode, LightCoordsUtil.FULL_BRIGHT, argb, bgArgb, 0);
 				}
 
 				poseStack.popPose();
 			}
-
-			bufferSource.endBatch();
 		});
 	}
 
