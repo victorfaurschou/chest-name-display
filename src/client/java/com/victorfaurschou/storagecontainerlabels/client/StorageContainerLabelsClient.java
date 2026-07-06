@@ -2,8 +2,11 @@ package com.victorfaurschou.storagecontainerlabels.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -97,6 +100,24 @@ public class StorageContainerLabelsClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		StorageContainerLabelsConfig.load();
 		StorageContainerLabels.LOGGER.info("Storage Container Labels initialized");
+
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
+				dispatcher.register(ClientCommands.literal("storage-container-labels")
+						.then(ClientCommands.literal("config")
+								.executes(ctx -> {
+									Minecraft mc = Minecraft.getInstance();
+									mc.execute(() -> mc.gui.setScreen(ClothConfigScreen.build(null)));
+									return 1;
+								}))
+						.then(ClientCommands.literal("version")
+								.executes(ctx -> {
+									String version = FabricLoader.getInstance()
+											.getModContainer("storage-container-labels")
+											.map(c -> c.getMetadata().getVersion().getFriendlyString())
+											.orElse("unknown");
+									ctx.getSource().sendFeedback(Component.literal("Storage Container Labels " + version));
+									return 1;
+								}))));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.level == null || client.player == null) {

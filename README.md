@@ -21,23 +21,31 @@ Available on [Modrinth](https://modrinth.com/mod/storage-container-labels) and [
 
 ## 📋 Usage
 
-1. Rename a storage container using an anvil. 
-2. Place the container and its name will be displayed as a floating label attached to it.
-3. You can customize its appearance if Mod Menu is installed
+**Naming a container**
 
-## 💡 Example
+1. Rename a name tag using an anvil.
+2. Combine the named tag with a container
+3. Place the container and its name will be displayed as a floating label attached to it.
 
-[![1](https://raw.githubusercontent.com/victorfaurschou/storage-container-labels/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/1.png)](https://github.com/victorfaurschou/storage-container-labels/blob/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/1.png)
+**Configuration**
+
+Open the config screen via **Mod Menu** or by running `/storage-container-labels config` in chat.
+
+## 💡 Examples
+
+[![Showcase](https://raw.githubusercontent.com/victorfaurschou/storage-container-labels/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/showcase.png)](https://github.com/victorfaurschou/storage-container-labels/blob/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/showcase.png)
+
+[![Naming a chest](https://raw.githubusercontent.com/victorfaurschou/storage-container-labels/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/naming-a-chest.gif)](https://github.com/victorfaurschou/storage-container-labels/blob/1388c0cab960ac90122f72e414aff4694b0bfcad/.github/images/examples/naming-a-chest.gif)
 
 ## 🔗 Dependencies
 
 ### Required
 - [Fabric Loader](https://fabricmc.net/use/)
 - [Fabric API](https://modrinth.com/mod/fabric-api)
+- [Cloth Config](https://modrinth.com/mod/cloth-config)
 
 ### Optional
-- [Mod Menu](https://modrinth.com/mod/modmenu) - for configuration (not necessary if defaults work for you)
-    - [Cloth Config](https://modrinth.com/mod/cloth-config)
+- [Mod Menu](https://modrinth.com/mod/modmenu)
 
 ## 🏷️ Tags
 
